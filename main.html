@@ -17,6 +17,23 @@
             padding: 1rem;
             text-align: center;
             font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        header a.view-more-button {
+            display: inline-block;
+            margin-top: 1rem;
+            background-color: #ffffff;
+            color: #6200ea;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        header a.view-more-button:hover {
+            background-color: #3700b3;
+            color: white;
         }
         .container {
             max-width: 800px;
@@ -38,18 +55,23 @@
         }
         input, textarea, select {
             width: 100%;
-            padding: 1rem;
+            padding: 0.75rem;
             margin-bottom: 0.75rem;
             border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 1rem;
             color: #333;
+            transition: border-color 0.3s;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: #6200ea;
+            outline: none;
         }
         button {
             width: 100%;
             padding: 1rem;
             font-size: 1.1rem;
-            background-color: #6200ea;
+            background-color: #000000;
             color: white;
             border: none;
             border-radius: 8px;
@@ -57,7 +79,7 @@
             transition: transform 0.2s, background-color 0.3s;
         }
         button:hover {
-            background-color: #3700b3;
+            background-color: #229413;
             transform: scale(1.05);
         }
         button:active {
@@ -65,10 +87,15 @@
         }
         .listing {
             border-bottom: 2px solid #ddd;
-            padding: 1.5rem 0;
+            padding: 1.5rem;
             margin-bottom: 1rem;
             background-color: #fafafa;
             border-radius: 8px;
+            transition: transform 0.2s, box-shadow 0.3s;
+        }
+        .listing:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
         }
         .listing:last-child {
             border-bottom: none;
@@ -77,8 +104,8 @@
             margin: 0.5rem 0;
         }
         .delete-button {
-            background-color: #ff1744;
-            color: white;
+            background-color: #ad0026;
+            color: rgb(255, 255, 255);
             border: none;
             padding: 0.75rem 1.5rem;
             cursor: pointer;
@@ -100,19 +127,40 @@
         }
         .game-list li {
             font-size: 1.1rem;
-            color: #6200ea;
+            color: #000000;
             margin-bottom: 0.5rem;
             transition: color 0.3s, transform 0.2s;
         }
         .game-list li:hover {
-            color: #3700b3;
+            color: #6200ea;
             transform: scale(1.05);
+        }
+        .view-more-button {
+            margin-top: 1.5rem;
+            background-color: #6200ea;
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .view-more-button:hover {
+            background-color: #3700b3;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .listing {
+            animation: fadeIn 0.5s ease-in-out;
         }
     </style>
 </head>
 <body>
     <header>
         <h1>Маркетплейс Ігрових Ресурсів</h1>
+        <a href="#listingsContainer" class="view-more-button">До оголошень</a>
     </header>
     <div class="container">
         <h2>Створити нове оголошення</h2>
@@ -143,7 +191,6 @@
                 <label for="quantity">Кількість товару</label>
                 <input type="number" id="quantity" placeholder="Введіть кількість товару" required>
             </div>
-            
             <div class="form-group">
                 <label for="description">Опис</label>
                 <textarea id="description" rows="4" placeholder="Опишіть предмет" required></textarea>
@@ -156,8 +203,11 @@
         </form>
 
         <h2>Оголошення</h2>
-        <div id="listingsContainer"></div>
-        
+        <div id="listingsContainer">
+
+        </div>
+
+        <button class="view-more-button">Переглянути більше оголошень</button>
 
         <h2>Ігри для продажу ресурсів</h2>
         <ul class="game-list">
@@ -177,7 +227,7 @@
         const listingsContainer = document.getElementById('listingsContainer');
         const gameSelect = document.getElementById('game');
         const specificTypeSelect = document.getElementById('specificType');
-    
+
         const gameOptions = {
             wow: ["Золото", "Предмети для крафту", "Ресурси для рейдів"],
             csgo: ["Скіни для зброї", "Ключі для кейсів", "Контракти"],
@@ -188,8 +238,7 @@
             dota: ["Скіни для героїв", "Аркани", "Портрети"],
             rust: ["Ресурси", "Зброя", "Підбор пароля до кланової бази", "Рейд клонової бази під нуль"]
         };
-    
- 
+
         const gameListItems = document.querySelectorAll('.game-list li');
         gameListItems.forEach(item => {
             item.addEventListener('click', function() {
@@ -198,12 +247,11 @@
                 updateSpecificTypes(selectedGame); 
             });
         });
-    
 
         function updateSpecificTypes(selectedGame) {
             const options = gameOptions[selectedGame] || [];
             specificTypeSelect.innerHTML = '';
-    
+
             options.forEach(option => {
                 const opt = document.createElement('option');
                 opt.value = option.toLowerCase();
@@ -211,46 +259,174 @@
                 specificTypeSelect.appendChild(opt);
             });
         }
-    
+
         gameSelect.addEventListener('change', function () {
             const selectedGame = gameSelect.value;
             updateSpecificTypes(selectedGame);
         });
-    
+
         gameSelect.dispatchEvent(new Event('change'));
-    
+
+
+        const currentUser = JSON.parse(localStorage.getItem('user')) || { username: "Гість" };
 
         form.addEventListener('submit', function(event) {
             event.preventDefault();
-    
-            const game = gameSelect.options[gameSelect.selectedIndex].text;
+
+            const game = gameSelect.value;
             const resourceName = document.getElementById('resourceName').value;
-            const specificType = specificTypeSelect.options[specificTypeSelect.selectedIndex].text;
+            const specificType = specificTypeSelect.value;
+            const quantity = document.getElementById('quantity').value;
             const description = document.getElementById('description').value;
             const price = document.getElementById('price').value;
-            const quantity = document.getElementById('quantity').value;
-    
+
             const listing = document.createElement('div');
-            listing.className = 'listing';
+            listing.classList.add('listing');
             listing.innerHTML = `
-                <h3>${resourceName} (${specificType})</h3>
+                <h3>${resourceName} (${game})</h3>
                 <p><strong>Гра:</strong> ${game}</p>
                 <p><strong>Опис:</strong> ${description}</p>
                 <p><strong>Ціна:</strong> ${price} грн</p>
-                <p><strong>Кількість:</strong> ${quantity}</p>  <!-- Виводимо кількість товару -->
-                <button class="delete-button">Видалити</button>
+                <p><strong>Кількість:</strong> ${quantity}</p>
             `;
-    
+
+
+            listing.dataset.author = currentUser.username;
+
+ 
+            if (currentUser && listing.dataset.author === currentUser.username) {
+                const deleteButton = document.createElement('button');
+                deleteButton.classList.add('delete-button');
+                deleteButton.textContent = 'Видалити';
+                deleteButton.addEventListener('click', function() {
+                    if (confirm("Ви впевнені, що хочете видалити це оголошення?")) {
+                        listing.remove();
+                    }
+                });
+                listing.appendChild(deleteButton);
+            }
+
             listingsContainer.appendChild(listing);
-    
-            const deleteButton = listing.querySelector('.delete-button');
-            deleteButton.addEventListener('click', function() {
-                listingsContainer.removeChild(listing);
-            });
-    
             form.reset();
-            gameSelect.dispatchEvent(new Event('change'));
         });
-    </script>    
+
+const fakeListings = [
+    {
+        game: "wow",
+        resourceName: "Золото",
+        specificType: "Золото",
+        quantity: 1000,
+        description: "Продам золото для World of Warcraft. Швидка доставка.",
+        price: 500
+    },
+    {
+        game: "csgo",
+        resourceName: "Скін AK-47",
+        specificType: "Скіни для зброї",
+        quantity: 1,
+        description: "Рідкісний скін AK-47. Ідеальний стан.",
+        price: 1200
+    },
+    {
+        game: "eve",
+        resourceName: "ISK",
+        specificType: "ISK",
+        quantity: 1000000,
+        description: "Продам ISK для EVE Online. Велика кількість.",
+        price: 1000
+    },
+    {
+        game: "diablo",
+        resourceName: "Речі",
+        specificType: "Речі",
+        quantity: 10,
+        description: "Продам рідкісні речі для Diablo III.",
+        price: 800
+    },
+    {
+        game: "roblox",
+        resourceName: "Товари для аватарів",
+        specificType: "Товари для аватарів",
+        quantity: 5,
+        description: "Продам товари для аватарів у Roblox.",
+        price: 300
+    },
+    {
+        game: "minecraft",
+        resourceName: "Монети на FT",
+        specificType: "Монети на FT",
+        quantity: 2000,
+        description: "Продам монети на FT серверах Minecraft.",
+        price: 400
+    },
+    {
+        game: "dota",
+        resourceName: "Скін для героя",
+        specificType: "Скіни для героїв",
+        quantity: 1,
+        description: "Продам скін для героя у Dota 2.",
+        price: 700
+    },
+    {
+        game: "rust",
+        resourceName: "Ресурси",
+        specificType: "Ресурси",
+        quantity: 500,
+        description: "Продам ресурси для Rust. Велика кількість.",
+        price: 600
+    }
+];
+
+
+function addListing(listing) {
+    const listingElement = document.createElement('div');
+    listingElement.classList.add('listing');
+    listingElement.innerHTML = `
+        <h3>${listing.resourceName} (${listing.game})</h3>
+        <p><strong>Гра:</strong> ${listing.game}</p>
+        <p><strong>Опис:</strong> ${listing.description}</p>
+        <p><strong>Ціна:</strong> ${listing.price} грн</p>
+        <p><strong>Кількість:</strong> ${listing.quantity}</p>
+    `;
+
+
+    listingElement.dataset.author = "Фейковий користувач";
+
+
+    if (currentUser && listingElement.dataset.author === currentUser.username) {
+        const deleteButton = document.createElement('button');
+        deleteButton.classList.add('delete-button');
+        deleteButton.textContent = 'Видалити';
+        deleteButton.addEventListener('click', function() {
+            if (confirm("Ви впевнені, що хочете видалити це оголошення?")) {
+                listingElement.remove();
+            }
+        });
+        listingElement.appendChild(deleteButton);
+    }
+
+    listingsContainer.appendChild(listingElement);
+}
+
+
+window.addEventListener('load', function() {
+    fakeListings.forEach(listing => {
+        addListing(listing);
+    });
+});
+
+        document.querySelectorAll('.delete-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const listing = this.parentElement;
+                if (currentUser && listing.dataset.author === currentUser.username) {
+                    if (confirm("Ви впевнені, що хочете видалити це оголошення?")) {
+                        listing.remove();
+                    }
+                } else {
+                    alert("Ви не можете видалити це оголошення, оскільки воно не є вашим.");
+                }
+            });
+        });
+    </script>
 </body>
 </html>
